@@ -1,0 +1,23 @@
+{
+    "name": "Plugins",
+    "rootNamespace": "",
+    "references": [
+        "GUID:343deaaf83e0cee4ca978e7df0b80d21",
+        "GUID:2bafac87e7f4b9b418d9448d219b01ab",
+        "GUID:e0cd26848372d4e5c891c569017e11f1",
+        "GUID:6055be8ebefd69e48b49212b09b47b2f",
+        "GUID:3ecd3ccc71914694f8436c80d896da8d",
+        "GUID:c3dd2a46833d59b45a078427116b678f",
+        "GUID:3fd87ac62c0437b439f92da607cf5d16",
+        "GUID:113befef21e716844ac90ebc7df28a14"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

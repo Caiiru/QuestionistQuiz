@@ -5,12 +5,10 @@ using System;
 using System.Collections.Generic;
 using DG.DemiEditor;
 using DG.DemiLib;
-using DG.Tweening;
-using DG.Tweening.Core;
+using DG.Tweening; 
 using UnityEditor;
 using UnityEditorInternal;
-using UnityEngine;
-using Object = UnityEngine.Object;
+using UnityEngine; 
 
 namespace DG.DOTweenEditor
 {

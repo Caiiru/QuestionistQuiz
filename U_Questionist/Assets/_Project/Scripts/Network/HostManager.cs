@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using Unity.Netcode;
 
@@ -13,8 +12,9 @@ public class HostManager : MonoBehaviour
 
     public void StartHost()
     {
+        
         _networkManager.StartServer();
-
+        Debug.Log($"[HostManager.StartHost Line 17]");
     }
 
     public void StopHost()
