@@ -2,8 +2,7 @@ using Unity.Services.Core;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using Unity.Services.Authentication;
-using Unity.Services.Lobbies;
-using AtomicConsole;
+using Unity.Services.Lobbies; 
 
 public class LobbyManager : MonoBehaviour
 {
@@ -17,8 +16,7 @@ public class LobbyManager : MonoBehaviour
         
         await AuthenticationService.Instance.SignInAnonymouslyAsync();
     }
-
-    [AtomicCommand(name:"CreateLobby")]
+ 
     private async void CreateLobby()
     {
 
