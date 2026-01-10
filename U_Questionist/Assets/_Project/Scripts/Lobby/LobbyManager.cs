@@ -1,3 +1,4 @@
+using DeveloperConsole;
 using Unity.Services.Core;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
@@ -12,26 +13,31 @@ public class LobbyManager : MonoBehaviour
     {
         await UnityServices.InitializeAsync();
         
-        
-        
         await AuthenticationService.Instance.SignInAnonymouslyAsync();
+        Console.AddCommand("CreateLobby", CreateLobbyCommand);
     }
  
     private async void CreateLobby()
     {
-
         try
         {
             string lobbyName = "New Lobby";
             int maxPlayers = 4;
             Lobby lobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers);
 
-            Debug.Log("Created Lobby");
+            // Debug.Log("Created Lobby");
+            Console.PrintSuccess("Created Lobby");
         }
         catch (LobbyServiceException e)
         {
             Debug.LogException(e);
         }
     }
+
+    public void CreateLobbyCommand(string[] args)
+    {
+        CreateLobby();
+    }
+        
 
 }

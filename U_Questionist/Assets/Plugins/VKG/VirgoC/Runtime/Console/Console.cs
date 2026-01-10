@@ -15,23 +15,24 @@ namespace DeveloperConsole
          * Access this property from your code to access this script.
          * E.g.: Console.Singleton.isSelected
          */
-        public static Console Singleton { get; set;}
-        
-        [Header("Customization")]
+        public static Console Singleton { get; set; }
 
-        [Tooltip("Which key to use to open the console.")]
+        [Header("Customization")] [Tooltip("Which key to use to open the console.")]
         /**
          * Choose on the inspector which key to use to open the console.
          */
         public KeyCode keyOpen = KeyCode.Tilde;
-        
+
+        public InputActionReference keyOpenAction;
+
         [Tooltip("Which key to use to open the console.")]
         /**
          * Choose on the inspector which key to use to open the console.
          */
         public KeyCode keyOpenAlt = KeyCode.Quote;
 
-        [Tooltip("Which key to use to open the console and immediately start typing, or type onto the already open console without clicking.")]
+        [Tooltip(
+            "Which key to use to open the console and immediately start typing, or type onto the already open console without clicking.")]
         /**
          * Choose on the inspector which key to use to open the console and immediately start typing, or type onto the already open console without clicking.
          */
@@ -43,17 +44,14 @@ namespace DeveloperConsole
         [ColorHtmlProperty] public Color colorError = Color.red;
         [ColorHtmlProperty] public Color colorCommands = Color.magenta;
 
-        [Space(10)]
-        [Header("Internal")]
-        public TMP_InputField inputField;
+        [Space(10)] [Header("Internal")] public TMP_InputField inputField;
         public TMP_Text consoleText;
         public Scrollbar scrollBar;
         public RectTransform consoleTextPanelRect;
         public RectTransform inputFieldRect;
         public RectTransform scrollBarRect;
 
-        [Space(10)]
-        public Button resizeBtn;
+        [Space(10)] public Button resizeBtn;
         public Button closeBtn;
 
         /**
@@ -73,7 +71,7 @@ namespace DeveloperConsole
 
         List<string> lastCommands = new List<string>();
         int commandBrowseCount = 0;
-        
+
         string m_colorDefault = "<color=\"white\">";
         string m_colorSuccess = "<color=\"green\">";
         string m_colorWarning = "<color=\"yellow\">";
@@ -118,6 +116,7 @@ namespace DeveloperConsole
          */
         public static void Print(string message)
         {
+            Debug.Log(message);
             Singleton.M_Print(message);
         }
 
@@ -127,8 +126,9 @@ namespace DeveloperConsole
          * @param message Message to print.
          */
         public static void PrintSuccess(string message)
-        {     
-           Singleton.M_PrintSuccess(message);
+        {
+            Debug.Log(message);
+            Singleton.M_PrintSuccess(message);
         }
 
         /**
@@ -137,7 +137,8 @@ namespace DeveloperConsole
          * @param message Message to print.
          */
         public static void PrintWarning(string message)
-        {     
+        {
+            Debug.LogWarning(message);
             Singleton.M_PrintWarning(message);
         }
 
@@ -147,7 +148,9 @@ namespace DeveloperConsole
          * @param message Message to print.
          */
         public void PrintError(string message)
-        {     
+        {
+            
+            Debug.LogError(message);
             Singleton.M_PrintError(message);
         }
 
@@ -176,9 +179,6 @@ namespace DeveloperConsole
         }
 
 
-
-
-
         // -----------------------------------------------------------------------------------------------------
         // -----------------------------------------------------------------------------------------------------
 
@@ -198,7 +198,7 @@ namespace DeveloperConsole
             m_colorDefault = "<color=#" + ColorUtility.ToHtmlStringRGB(colorDefault) + ">";
             m_colorSuccess = "<color=#" + ColorUtility.ToHtmlStringRGB(colorSuccess) + ">";
             m_colorWarning = "<color=#" + ColorUtility.ToHtmlStringRGB(colorWarning) + ">";
-            m_colorError   = "<color=#" + ColorUtility.ToHtmlStringRGB(colorError  ) + ">";
+            m_colorError = "<color=#" + ColorUtility.ToHtmlStringRGB(colorError) + ">";
             m_colorCommands = "<color=#" + ColorUtility.ToHtmlStringRGB(colorCommands) + ">";
 
             AddCommand("clear", ClearLogCommand);
@@ -207,19 +207,16 @@ namespace DeveloperConsole
 
         void Start()
         {
-            inputField.onSelect.AddListener((string word) => {
-                isSelected = true;
-            });
-            inputField.onDeselect.AddListener((string word) => {
-                isSelected = false;
-            });
-            inputField.onEndEdit.AddListener((string word) => {
+            inputField.onSelect.AddListener((string word) => { isSelected = true; });
+            inputField.onDeselect.AddListener((string word) => { isSelected = false; });
+            inputField.onEndEdit.AddListener((string word) =>
+            {
                 //print("End edit");
             });
 
             Close();
         }
-        
+
         void Update()
         {
             ProcessInput();
@@ -234,54 +231,62 @@ namespace DeveloperConsole
 
         void ProcessInput()
         {
+            if (keyOpenAction.action.IsPressed())
+            {
+                Debug.Log("Action performed");
+            }
+
             if (isSelected)
             {
                 if (Keyboard.current.tabKey.isPressed)
                 {
                     AutoComplete();
-                    
                 }
+
                 if (Keyboard.current.enterKey.isPressed || Keyboard.current.numpadEnterKey.isPressed)
                 {
                     if (inputField.text.Length > 0)
                     {
                         ExecuteCommand(inputField.text);
                         inputField.text = "";
-                        
                     }
+
                     eventSystem.SetSelectedGameObject(null);
                 }
+
                 if (Keyboard.current.upArrowKey.isPressed)
                 {
                     commandBrowseCount++;
                     commandBrowseCount = System.Math.Min(commandBrowseCount, lastCommands.Count);
                     if (lastCommands.Count > 0)
                     {
-                        inputField.text = lastCommands[commandBrowseCount-1];
+                        inputField.text = lastCommands[commandBrowseCount - 1];
                     }
                 }
+
                 if (Keyboard.current.downArrowKey.isPressed)
                 {
                     commandBrowseCount--;
                     commandBrowseCount = System.Math.Max(commandBrowseCount, 0);
-                    inputField.text = commandBrowseCount > 0 ? lastCommands[commandBrowseCount-1] : "";
+                    inputField.text = commandBrowseCount > 0 ? lastCommands[commandBrowseCount - 1] : "";
                 }
             }
             else
             {
                 // if (Input.GetKeyDown(keyOpen) || Input.GetKeyDown(keyOpenAlt))
-                if(Keyboard.current.quoteKey.isPressed)
+                if (Keyboard.current.backquoteKey.isPressed)
                 {
                     Toggle();
                 }
-                if (Keyboard.current.quoteKey.isPressed && !isOpen)
+
+                if (Keyboard.current.backquoteKey.isPressed && !isOpen)
                 {
                     Open();
                 }
             }
 
             // if (Input.GetKeyDown(keyType))
-            if(Keyboard.current.quoteKey.isPressed)
+            if (Keyboard.current.backquoteKey.isPressed)
             {
                 inputField.Select();
             }
@@ -290,6 +295,7 @@ namespace DeveloperConsole
             {
                 StartResizing();
             }
+
             if (Mouse.current.leftButton.isPressed && isResizing)
             {
                 StopResizing();
@@ -299,33 +305,33 @@ namespace DeveloperConsole
         protected void M_Print(string message)
         {
             consoleText.text += m_colorDefault + message + "\n";
-            
+
             StartCoroutine(UpdateScrollbar());
         }
 
         protected void M_PrintSuccess(string message)
-        {     
+        {
             consoleText.text += m_colorSuccess + message + m_colorSuccess + "\n";
-            
+
             StartCoroutine(UpdateScrollbar());
         }
 
         protected void M_PrintWarning(string message)
-        {     
+        {
             consoleText.text += m_colorWarning + message + m_colorEnd + "\n";
-            
+
             StartCoroutine(UpdateScrollbar());
         }
 
         protected void M_PrintError(string message)
-        {     
+        {
             consoleText.text += m_colorError + message + m_colorEnd + "\n";
-            
+
             StartCoroutine(UpdateScrollbar());
         }
 
-        protected bool M_AddCommand(string commandText, Command command){
-
+        protected bool M_AddCommand(string commandText, Command command)
+        {
             bool exists = false;
 
             foreach (KeyValuePair<string, Command> kvp in commands)
@@ -342,6 +348,7 @@ namespace DeveloperConsole
                 commands.Add(commandText, command);
                 return true;
             }
+
             PrintWarning(string.Format("Command '{0}{1}{2}' already added", m_colorCommands, commandText, m_colorEnd));
             return false;
         }
@@ -371,7 +378,8 @@ namespace DeveloperConsole
             {
                 if (string.Equals(args[0], kvp.Key))
                 {
-                    Print(string.Format("{0}Executing command '{1}{2}{3}{4}'", m_colorDefault, m_colorCommands, commandText, m_colorEnd, m_colorDefault));
+                    Print(string.Format("{0}Executing command '{1}{2}{3}{4}'", m_colorDefault, m_colorCommands,
+                        commandText, m_colorEnd, m_colorDefault));
                     try
                     {
                         kvp.Value(args.Skip(1).ToArray());
@@ -380,13 +388,16 @@ namespace DeveloperConsole
                     {
                         PrintError(e.Message);
                     }
+
                     foundCommand = true;
                     break;
                 }
             }
+
             if (!foundCommand)
             {
-                Print(string.Format("{0}Command '{1}{2}{3}{4}' not found. Type \'help\' for a list of available commands{5}", 
+                Print(string.Format(
+                    "{0}Command '{1}{2}{3}{4}' not found. Type \'help\' for a list of available commands{5}",
                     m_colorError, m_colorCommands, commandText, m_colorEnd, m_colorError, m_colorEnd));
             }
 
@@ -403,7 +414,7 @@ namespace DeveloperConsole
                     possibilities.Add(kvp.Key);
                 }
             }
-            
+
             if (possibilities.Count > 0)
             {
                 string possibilitiesLine = m_colorCommands;
@@ -411,6 +422,7 @@ namespace DeveloperConsole
                 {
                     possibilitiesLine += possibility + " ";
                 }
+
                 possibilitiesLine += m_colorEnd;
 
                 if (possibilities.Count == 1)
@@ -451,6 +463,7 @@ namespace DeveloperConsole
             {
                 child.gameObject.SetActive(true);
             }
+
             isOpen = true;
             inputField.Select();
         }
@@ -461,6 +474,7 @@ namespace DeveloperConsole
             {
                 child.gameObject.SetActive(false);
             }
+
             isOpen = false;
         }
 
@@ -495,10 +509,11 @@ namespace DeveloperConsole
             {
                 if (isResizing)
                 {
-                    Vector2 mousePosition =  Mouse.current.position.ReadValue();
+                    Vector2 mousePosition = Mouse.current.position.ReadValue();
                     Vector2 mouseOffset = new Vector2(mousePosition.x, mousePosition.y) - resizeInitialMousePosition;
                     Vector2 newSizeDelta = resizeInitialOffset + mouseOffset;
-                    Vector2 newSizeDeltaClamped = new Vector2(-newSizeDelta.x > -380f ? 380f : newSizeDelta.x, Mathf.Max(newSizeDelta.y, 150.0f));
+                    Vector2 newSizeDeltaClamped = new Vector2(-newSizeDelta.x > -380f ? 380f : newSizeDelta.x,
+                        Mathf.Max(newSizeDelta.y, 150.0f));
 
                     consoleTextPanelRect.sizeDelta = newSizeDeltaClamped;
                     SetLeft(consoleTextPanelRect, 0f);
@@ -507,7 +522,8 @@ namespace DeveloperConsole
                     SetLeft(inputFieldRect, 0f);
 
                     scrollBarRect.sizeDelta = new Vector2(10f, newSizeDeltaClamped.y - 24);
-                    scrollBarRect.anchoredPosition = new Vector2(newSizeDeltaClamped.x, scrollBarRect.anchoredPosition.y);
+                    scrollBarRect.anchoredPosition =
+                        new Vector2(newSizeDeltaClamped.x, scrollBarRect.anchoredPosition.y);
                 }
                 else
                 {
@@ -523,14 +539,17 @@ namespace DeveloperConsole
         {
             rt.offsetMin = new Vector2(left, rt.offsetMin.y);
         }
+
         void SetRight(RectTransform rt, float right)
         {
             rt.offsetMax = new Vector2(-right, rt.offsetMax.y);
         }
+
         void SetTop(RectTransform rt, float top)
         {
             rt.offsetMax = new Vector2(rt.offsetMax.x, -top);
         }
+
         void SetBottom(RectTransform rt, float bottom)
         {
             rt.offsetMin = new Vector2(rt.offsetMin.x, bottom);
