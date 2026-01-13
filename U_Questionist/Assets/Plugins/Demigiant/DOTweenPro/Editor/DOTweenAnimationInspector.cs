@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.IO; 
+#if UNITY_EDITOR
 using DG.DemiEditor;
+#endif
 using DG.DOTweenEditor.Core;
 using DG.DOTweenEditor.UI;
 using DG.Tweening;
@@ -15,7 +17,7 @@ using DOTweenSettings = DG.Tweening.Core.DOTweenSettings;
 #if true // UI_MARKER
 using UnityEngine.UI;
 #endif
-#if true // TEXTMESHPRO_MARKER
+#if false // TEXTMESHPRO_MARKER
     using TMPro;
 #endif
 
@@ -120,7 +122,7 @@ namespace DG.DOTweenEditor
             { DOTweenAnimation.AnimationType.Text, new[] { typeof(tk2dTextMesh) } }
         };
 #endif
-#if true // TEXTMESHPRO_MARKER
+#if false // TEXTMESHPRO_MARKER
         static readonly Dictionary<DOTweenAnimation.AnimationType, Type[]> _TMPAnimationTypeToComponent = new Dictionary<DOTweenAnimation.AnimationType, Type[]>() {
             { DOTweenAnimation.AnimationType.Color, new[] { typeof(TextMeshPro), typeof(TextMeshProUGUI) } },
             { DOTweenAnimation.AnimationType.Fade, new[] { typeof(TextMeshPro), typeof(TextMeshProUGUI) } },
@@ -141,7 +143,7 @@ namespace DG.DOTweenEditor
 #if false // TK2D_MARKER
             "Text",
 #endif
-#if true // TEXTMESHPRO_MARKER
+#if false // TEXTMESHPRO_MARKER
             "Text",
 #endif
 #if true // UI_MARKER
@@ -613,7 +615,7 @@ namespace DG.DOTweenEditor
                 }
             }
 #endif
-#if true // TEXTMESHPRO_MARKER
+#if false // TEXTMESHPRO_MARKER
             if (_TMPAnimationTypeToComponent.ContainsKey(_src.animationType)) {
                 foreach (Type t in _TMPAnimationTypeToComponent[_src.animationType]) {
                     srcTarget = targetGO.GetComponent(t);

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 8eed803157f22104ea049b2be0e97ae9
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 241462
+  packageName: VirgoC Console
+  packageVersion: 1.0.0
+  assetPath: Assets/VKG/VirgoC/Samples/Scenes/SampleConsole.unity
+  uploadId: 558261
