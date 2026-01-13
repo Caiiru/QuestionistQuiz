@@ -1,27 +1,88 @@
+using System;
 using System.Collections.Generic;
-using DeveloperConsole;
 using TMPro;
+using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
+using Console = DeveloperConsole.Console;
 
 public class LobbyVisual : MonoBehaviour
 {
     public GameObject playerEntry;
     public Transform playerEntryTransform;
-    public TextMeshProUGUI playerNameText;
-    [Header("Code")] public TextMeshProUGUI joinCodeText;
+    [Header("Texts")] public TextMeshProUGUI playerNameText;
+    public TextMeshProUGUI joinCodeText;
+    public TextMeshProUGUI playersCountText;
 
-    public void PopulateLobby(Lobby lobby)
+    //Lobby
+    private Lobby _connectedLobby;
+    private ILobbyEvents _lobbyEvents;
+
+    //Log
+    private Log logger;
+
+    private void OnEnable()
     {
-        Console.Print($"Lobby-HostID :{lobby.HostId}");
-        List<Player> players = lobby.Players;
+        if (TryGetComponent<Log>(out logger))
+        {
+            logger.prefix = "Lobby Visual";
+        }
+    }
+
+    public void JoinLobby(Lobby lobby)
+    {
+        _connectedLobby = lobby;
+        PopulateLobby();
+        SetupLobbyCallbacks();
+
+
+        joinCodeText.text = _connectedLobby.LobbyCode;
+    }
+
+    private async void SetupLobbyCallbacks()
+    {
+        var callbacks = new LobbyEventCallbacks();
+        callbacks.LobbyChanged += LobbyChanged;
+
+        try
+        {
+            _lobbyEvents = await LobbyService.Instance.SubscribeToLobbyEventsAsync(_connectedLobby.Id, callbacks);
+        }
+        catch (LobbyServiceException e)
+        {
+            switch (e.Reason)
+            {
+                case LobbyExceptionReason.AlreadySubscribedToLobby:
+                    logger.PrintError(
+                        $"Already subscribed to lobby[{_connectedLobby.Id}]. We did not need to try and subscribe again. Exception Message: {e.Message}");
+                    break;
+                case LobbyExceptionReason.SubscriptionToLobbyLostWhileBusy:
+                    logger.PrintError(
+                        $"Subscription to lobby events was lost while it was busy trying to subscribe. Exception Message: {e.Message}");
+                    throw;
+                case LobbyExceptionReason.LobbyEventServiceConnectionError:
+                    logger.PrintError($"Failed to connect to lobby events. Exception Message: {e.Message}");
+                    throw;
+                default: throw;
+            }
+        }
+    }
+
+    public void UpdateLobby(Lobby lobby)
+    {
+        _connectedLobby = lobby;
+        CleanupVisual();
+        PopulateLobby();
+    }
+
+    private void PopulateLobby()
+    {
+        List<Player> players = _connectedLobby.Players;
         playerNameText.text = $"{players[0].Data["PlayerName"].Value}'s room";
         foreach (Player p in players)
         {
-            Console.Print($"ID:{p.Id}");
-            if (p.Id == lobby.HostId)
+            if (p.Id == _connectedLobby.HostId)
             {
-                Console.Print("I'll not create the host");
                 continue;
             }
 
@@ -30,9 +91,24 @@ public class LobbyVisual : MonoBehaviour
         }
     }
 
-    public void PopulateLobbyHost(string code, string playerName)
+    private void CleanupVisual()
     {
+        for (int i = 0; i < playerEntryTransform.childCount; i++)
+        {
+            Destroy(playerEntryTransform.GetChild(i).gameObject);
+        }
+    }
+
+    private void LobbyChanged(ILobbyChanges changes)
+    {
+        PopulateLobby();
+    }
+
+    public void PopulateLobbyHost(Lobby lobby, string playerName)
+    {
+        _connectedLobby = lobby;
+        SetupLobbyCallbacks();
         playerNameText.text = $"{playerName}'s room";
-        joinCodeText.text = code;
+        joinCodeText.text = _connectedLobby.LobbyCode;
     }
 }

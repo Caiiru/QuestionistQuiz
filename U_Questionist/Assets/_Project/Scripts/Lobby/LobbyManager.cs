@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices.ComTypes;
 using Unity.Services.Core;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
@@ -9,24 +10,42 @@ using Console = DeveloperConsole.Console;
 
 public class LobbyManager : MonoBehaviour
 {
+    //Lobbies
+
     private Lobby _lobby;
+    private Lobby _hostLobby;
+
+    //Timers
     private float _heartbeatTimer;
+    private float _lobbyUpdateTimer;
+
+    //Player Connection Info
     public string playerName;
     public string joinCode;
 
+    //Screens
     public Transform loadingScreenTransform;
     public Transform lobbyVisualTransform;
+
     public Transform joinScreenTransform;
 
+    //Scripts
+    private LobbyVisual _lobbyVisual;
+    private Log logger;
 
     private async void Start()
     {
+        //Logger
+        logger = GetComponent<Log>();
+        logger.prefix = "LobbyManager";
+
+
         playerName = "Miguelito " + UnityEngine.Random.Range(10, 99);
         await UnityServices.InitializeAsync();
 
         AuthenticationService.Instance.SignedIn += () =>
         {
-            Console.Print("Signed in " + AuthenticationService.Instance.PlayerId);
+            logger.PrintLog("Signed in " + AuthenticationService.Instance.PlayerId);
         };
 
         await AuthenticationService.Instance.SignInAnonymouslyAsync();
@@ -36,7 +55,7 @@ public class LobbyManager : MonoBehaviour
 
     private async void HandleLobbyHeartbeat()
     {
-        if (_lobby != null)
+        if (_hostLobby != null)
         {
             _heartbeatTimer -= Time.deltaTime;
             if (_heartbeatTimer <= 0)
@@ -44,15 +63,34 @@ public class LobbyManager : MonoBehaviour
                 float heartbeatTimerMax = 15;
                 _heartbeatTimer = heartbeatTimerMax;
 
-                await LobbyService.Instance.SendHeartbeatPingAsync(lobbyId: _lobby.HostId);
+                await LobbyService.Instance.SendHeartbeatPingAsync(lobbyId: _hostLobby.HostId);
             }
         }
     }
 
-    // private void Update()
-    // {
-    //     HandleLobbyHeartbeat();
-    // }
+    private async void HandleLobbyPollUpdates()
+    {
+        if (_lobby != null)
+        {
+            _lobbyUpdateTimer -= Time.deltaTime;
+            if (_lobbyUpdateTimer <= 0)
+            {
+                float _lobbyUpdateTimerMax = 2;
+                _lobbyUpdateTimer = _lobbyUpdateTimerMax;
+                logger.PrintLog("Updating Lobby: " + _lobby.Name);
+
+                Lobby lobby = await LobbyService.Instance.GetLobbyAsync(lobbyId: _lobby.Id);
+                _lobby = lobby;
+                _lobbyVisual.UpdateLobby(_lobby);
+            }
+        }
+    }
+
+    private void Update()
+    {
+        // HandleLobbyHeartbeat();
+        HandleLobbyPollUpdates();
+    }
 
 
     public async void CreateLobby()
@@ -76,13 +114,17 @@ public class LobbyManager : MonoBehaviour
                 Player = hostPlayer,
             };
 
-            _lobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers, lobbyOptions);
-
+            _hostLobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers, lobbyOptions);
+            _lobby = _hostLobby;
             // Debug.Log("Created Lobby");
-            LobbyVisual _lobbyVisual = lobbyVisualTransform.GetComponent<LobbyVisual>();
-            _lobbyVisual.PopulateLobbyHost(_lobby.LobbyCode, playerName);
-            Console.PrintSuccess("Created Lobby successfully: " + _lobby.Name + " to " + maxPlayers + " players");
-            Console.PrintSuccess("Lobby Code: " + _lobby.LobbyCode);
+            _lobbyVisual = lobbyVisualTransform.GetComponent<LobbyVisual>();
+            // _lobbyVisual.PopulateLobbyHost(_hostLobby, playerName);
+            _lobbyVisual.JoinLobby(_hostLobby);
+
+            Console.PrintSuccess("Created Lobby successfully: " + _hostLobby.Name + " to " + maxPlayers + " players");
+            Console.PrintSuccess("Lobby Code: " + _hostLobby.LobbyCode);
+
+            Console.AddCommand("PrintLobby", PrintPlayersCommand);
         }
         catch (LobbyServiceException e)
         {
@@ -115,14 +157,16 @@ public class LobbyManager : MonoBehaviour
             };
 
             Lobby joinedLobby = await LobbyService.Instance.JoinLobbyByCodeAsync(joinCode, joinLobbyByCodeOptions);
-            Console.PrintSuccess("Joined Lobby successfully: " + joinCode);
-            LobbyVisual _lobbyVisual = lobbyVisualTransform.GetComponent<LobbyVisual>();
-            _lobbyVisual.PopulateLobby(joinedLobby);
+            _lobbyVisual = lobbyVisualTransform.GetComponent<LobbyVisual>();
+            _lobbyVisual.JoinLobby(joinedLobby);
+            _lobby = joinedLobby;
             
             lobbyVisualTransform.gameObject.SetActive(true);
             loadingScreenTransform.gameObject.SetActive(false);
 
-            PrintPlayers(joinedLobby);
+
+            Console.AddCommand("PrintLobby", PrintPlayersCommand);
+            logger.PrintSuccess("Joined Lobby successfully: " + joinCode);
         }
         catch (LobbyServiceException e)
         {
@@ -146,6 +190,18 @@ public class LobbyManager : MonoBehaviour
     public void SetPlayerName(string newName)
     {
         playerName = newName;
+    }
+
+    public async void LeaveLobby()
+    {
+        try
+        {
+            await LobbyService.Instance.RemovePlayerAsync(_lobby.Id, AuthenticationService.Instance.PlayerId);
+        }
+        catch (LobbyServiceException e)
+        {
+            logger.PrintError(e.Message);
+        }
     }
 
     #endregion

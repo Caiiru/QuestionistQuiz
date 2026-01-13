@@ -209,6 +209,7 @@ GameObject:
   m_Component:
   - component: {fileID: 365469042}
   - component: {fileID: 365469043}
+  - component: {fileID: 365469044}
   m_Layer: 0
   m_Name: Lobby
   m_TagString: Untagged
@@ -255,6 +256,24 @@ MonoBehaviour:
   loadingScreenTransform: {fileID: 1604753267}
   lobbyVisualTransform: {fileID: 862704590}
   joinScreenTransform: {fileID: 852234567}
+--- !u!114 &365469044
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 365469041}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3da9e321c2101945b653611d70cec3c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Scripts::Log
+  isActive: 0
+  prefix: 
+  prefixColor: {r: 0.8962264, g: 0.37624598, b: 0.37624598, a: 0.8156863}
+  textColor: {r: 0.08962262, g: 1, b: 0.68647194, a: 1}
+  successColor: {r: 0.4862745, g: 0.9882354, b: 0, a: 1}
+  errorColor: {r: 0.8627452, g: 0.1921569, b: 0.1960784, a: 1}
 --- !u!1 &516771676
 GameObject:
   m_ObjectHideFlags: 0
@@ -1722,6 +1741,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
+      - m_Target: {fileID: 365469043}
+        m_TargetAssemblyTypeName: LobbyManager, Scripts
+        m_MethodName: LeaveLobby
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
 --- !u!114 &861271009
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1773,6 +1804,7 @@ GameObject:
   - component: {fileID: 862704592}
   - component: {fileID: 862704591}
   - component: {fileID: 862704594}
+  - component: {fileID: 862704595}
   m_Layer: 0
   m_Name: LobbyScreen
   m_TagString: Untagged
@@ -1884,6 +1916,25 @@ MonoBehaviour:
   playerEntryTransform: {fileID: 1499796323}
   playerNameText: {fileID: 904207224}
   joinCodeText: {fileID: 1370924516}
+  playersCountText: {fileID: 516771678}
+--- !u!114 &862704595
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 862704589}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3da9e321c2101945b653611d70cec3c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Scripts::Log
+  isActive: 0
+  prefix: Lobby Visual
+  prefixColor: {r: 1, g: 0.9742207, b: 0, a: 1}
+  textColor: {r: 1, g: 0.4136189, b: 0, a: 1}
+  successColor: {r: 0.4862745, g: 0.9882354, b: 0, a: 1}
+  errorColor: {r: 0.8627452, g: 0.1921569, b: 0.1960784, a: 1}
 --- !u!1 &904207222
 GameObject:
   m_ObjectHideFlags: 0
